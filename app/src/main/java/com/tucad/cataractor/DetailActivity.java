@@ -5,10 +5,13 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
@@ -21,8 +24,6 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -30,10 +31,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class DetailActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity
+        implements ActivityCompat.OnRequestPermissionsResultCallback {
 
     public static final String TAG = "DetailActivity";
-    private static int REQUEST_WRITE_EXTERNAL_PERMISSION = 200;
+    private static final int REQUEST_WRITE_EXTERNAL_PERMISSION = 200;
 
     @BindView(R.id.takepicbutton) Button takepicbutton;
     @BindView(R.id.linearLayout) LinearLayout linearLayout;
@@ -51,6 +53,12 @@ public class DetailActivity extends AppCompatActivity {
     private Bitmap bitmap = null;
     String albumName = "Cataractor";
 
+    String firstname_str;
+    String lastname_str;
+    String age_str;
+    String sex_str;
+    String image_path_str;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,109 +67,77 @@ public class DetailActivity extends AppCompatActivity {
 
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        // Ask for permissions
-        if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            new AlertDialog.Builder(this)
-                    .setMessage(R.string.request_permission)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                    REQUEST_WRITE_EXTERNAL_PERMISSION);
-                        }
-                    })
-                    .setNegativeButton(android.R.string.cancel,
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Toast.makeText(getParent(), "Cannot save eye record",
-                                            Toast.LENGTH_LONG).show();
-                                    Log.e(TAG, "Cannot save eye record");
-                                }
-                            })
-                    .create();
-        } else {
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_PERMISSION);
-        }
-
+        // get data from form
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
-        final String firstname_str = extras.getString(FormActivity.EXTRA_FIRSTNAME);
-        final String lastname_str = extras.getString(FormActivity.EXTRA_LASTNAME);
-        final String age_str = extras.getString(FormActivity.EXTRA_AGE);
-        final String sex_str = extras.getString(FormActivity.EXTRA_SEX);
-        final String image_path_str =  extras.getString(FormActivity.EXTRA_IMAGEPATH);
+        assert extras != null;
+        firstname_str = extras.getString(FormActivity.EXTRA_FIRSTNAME);
+        lastname_str = extras.getString(FormActivity.EXTRA_LASTNAME);
+        age_str = extras.getString(FormActivity.EXTRA_AGE);
+        sex_str = extras.getString(FormActivity.EXTRA_SEX);
+        image_path_str =  extras.getString(FormActivity.EXTRA_IMAGEPATH);
 
         fullname.setText(Html.fromHtml("คุณ " + firstname_str + " " + lastname_str));
         agesex.setText(Html.fromHtml("<string><font color=\"gray\">" + "อายุ " + age_str + " ปี, " +
-                    "เพศ " + sex_str + "</font></string>"));
+                "เพศ " + sex_str + "</font></string>"));
 
         diagnose.setText(Html.fromHtml("ไม่ป่วยเป็นโรคต้อกระจก"));
         treatment.setText(Html.fromHtml("ควรตรวจสุขภาพตาทุกๆ 12 เดือน"));
 
 
         if (image_path_str != null) {
+            // Info is already on record, show it
             imageView.setImageURI(Uri.fromFile(new File(image_path_str)));
         } else {
+            // Load image
             byte[] jpeg = ResultHolder.getImage();
-
             if (jpeg != null) {
                 bitmap = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
-
                 if (bitmap != null) {
                     imageView.setImageBitmap(bitmap);
 
                     actualResolution.setText(bitmap.getWidth() + " x " + bitmap.getHeight());
                     approxUncompressedSize.setText(getApproximateFileMegabytes(bitmap) + "MB");
                     captureLatency.setText(ResultHolder.getTimeToCallback() + " milliseconds");
+                } else {
+                    Log.e(TAG, "bitmap (onCreate) is null");
+                    finish();
                 }
+            } else {
+                Log.e(TAG, "jpeg is null");
+                finish();
             }
 
-            // save to Room database
-            t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (bitmap != null) {
-                        EyeRecord eyeRecord = new EyeRecord();
-                        eyeRecord.setFirstname(firstname_str);
-                        eyeRecord.setLastname(lastname_str);
-                        eyeRecord.setAge(age_str);
-                        eyeRecord.setSex(sex_str);
-
-                        // Create an image file name
-                        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-
-                        File myDir = new File(Environment.getExternalStoragePublicDirectory(
-                                Environment.DIRECTORY_PICTURES), albumName);
-                        myDir.mkdir();
-                        if (!myDir.exists()) {
-                            Log.e(TAG, "Fail " + myDir);
-                        }
-
-                        String fname = "IMG_" + timeStamp + ".jpg";
-
-                        File file = new File(myDir, fname);
-                        Log.e(TAG, file.getPath());
-                        if (file.exists())
-                            file.delete();
-                        try {
-                            FileOutputStream out = new FileOutputStream(file);
-                            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-                            out.flush();
-                            out.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-
-                        eyeRecord.setImagepath(file.getPath());
-                        MainActivity.addEyeRecord(eyeRecord);
-                        Log.e(TAG, "save eye record successful at " + file.getPath());
-                    } else {
-                        Log.e(TAG, "bitmap is null");
-                    }
+            // Ask for permissions
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // Permission is not granted
+                if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    new AlertDialog.Builder(this)
+                            .setMessage(R.string.request_permission)
+                            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                            REQUEST_WRITE_EXTERNAL_PERMISSION);
+                                }
+                            })
+                            .setNegativeButton(android.R.string.cancel,
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Toast.makeText(getParent(), "Cannot save eye record",
+                                                    Toast.LENGTH_LONG).show();
+                                            Log.e(TAG, "Cannot save eye record");
+                                        }
+                                    })
+                            .create();
+                } else {
+                    requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_WRITE_EXTERNAL_PERMISSION);
                 }
-            });
-            t.start();
+            } else {
+                saveEyeRecord();
+            }
         }
     }
 
@@ -181,6 +157,88 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Log.e(TAG, "You shall not pass");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_WRITE_EXTERNAL_PERMISSION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay!
+                    saveEyeRecord();
+                } else {
+                    // permission denied, boo!
+                    Log.e(TAG, "Eye record is not saved");
+                }
+                return;
+            }
+        }
+    }
+
+    void saveEyeRecord() {
+        // Create an image file name
+        File myDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), albumName);
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String fname = "IMG_" + timeStamp + ".jpg";
+
+        EyeRecord eyeRecord = new EyeRecord();
+        eyeRecord.setFirstname(firstname_str);
+        eyeRecord.setLastname(lastname_str);
+        eyeRecord.setAge(age_str);
+        eyeRecord.setSex(sex_str);
+        eyeRecord.setImagepath(saveEyeImage(myDir, fname));
+        saveEyeRecord2Room(eyeRecord);
+    }
+
+    private String saveEyeImage(File myDir, String fname) {
+        if (bitmap == null) {
+            Log.e(TAG, "bitmap is null");
+            return "";
+        }
+
+        // create directory
+        if (!myDir.exists()) {
+            Log.e(TAG, "Directory not exist " + myDir);
+            if (myDir.mkdirs()) {
+                Log.e(TAG, "Fail to create directory: " + myDir);
+            }
+        }
+
+        File file = new File(myDir, fname);
+        if (file.exists()) {
+            Log.e(TAG, "Duplicate file exists");
+            if (file.delete()) {
+                Log.e(TAG, "File successfully deletes duplicate");
+            } else {
+                Log.e(TAG, "File fails to delete duplicate");
+            }
+        }
+        try {
+            Log.e(TAG, "Save to " + file.getPath());
+            FileOutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file.getPath();
+    }
+
+    private void saveEyeRecord2Room(final EyeRecord eyerec) {
+        // save to Room database
+        t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity.addEyeRecord(eyerec);
+                Log.e(TAG, "save eye record successfully");
+            }
+        });
+        t.start();
     }
 
     private static float getApproximateFileMegabytes(Bitmap bitmap) {

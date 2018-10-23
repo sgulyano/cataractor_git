@@ -8,4 +8,12 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="TableTitle" parent="android:Theme">
+        <item name="android:textViewStyle">@style/TableTitleTextView</item>
+    </style>
+
+    <style name="TableTitleTextView" parent="android:Widget.TextView">
+        <item name="android:textSize">18sp</item>
+    </style>
+
 </resources>

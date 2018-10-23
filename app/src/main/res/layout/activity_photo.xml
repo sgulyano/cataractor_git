@@ -15,6 +15,7 @@
         android:adjustViewBounds="true"
         android:keepScreenOn="true"
         android:visibility="visible"
+        app:ckPermissions="picture"
         app:layout_constraintBottom_toTopOf="@+id/takepicbutton"
         app:layout_constraintDimensionRatio="w,9:16"
         app:layout_constraintEnd_toEndOf="parent"

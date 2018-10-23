@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 @Entity
 public class EyeRecord {
 
-    @NonNull
     @PrimaryKey (autoGenerate = true)
     private Integer recordId;
 
@@ -18,14 +17,15 @@ public class EyeRecord {
     private String sex;
     private String imagepath;
 
-    public EyeRecord() {
+    EyeRecord() {
     }
 
-    public Integer getRecordId() {
+    @NonNull
+    Integer getRecordId() {
         return recordId;
     }
 
-    public void setRecordId(Integer recordId) {
+    void setRecordId(@NonNull Integer recordId) {
         this.recordId = recordId;
     }
 
@@ -33,7 +33,7 @@ public class EyeRecord {
         return firstname;
     }
 
-    public void setFirstname(String firstname) {
+    void setFirstname(String firstname) {
         this.firstname = firstname;
     }
 
@@ -53,19 +53,17 @@ public class EyeRecord {
         this.age = age;
     }
 
-    public String getSex() {
-        return sex;
-    }
+    String getSex() { return sex; }
 
-    public void setSex(String sex) {
+    void setSex(String sex) {
         this.sex = sex;
     }
 
-    public String getImagepath() {
+    String getImagepath() {
         return imagepath;
     }
 
-    public void setImagepath(String imagepath) {
+    void setImagepath(String imagepath) {
         this.imagepath = imagepath;
     }
 }

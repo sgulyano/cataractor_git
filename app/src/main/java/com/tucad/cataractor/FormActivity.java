@@ -1,18 +1,23 @@
 package com.tucad.cataractor;
 
 import android.app.Activity;
+import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import butterknife.ButterKnife;
 import butterknife.BindView;
@@ -34,6 +39,10 @@ public class FormActivity extends AppCompatActivity {
     @BindView(R.id.radiogpsex) RadioGroup radiogpsex;
     @BindView(R.id.age) EditText age;
 
+    @BindView(R.id.text_input_layout_firstname) TextInputLayout til_firstname;
+    @BindView(R.id.text_input_layout_lastname) TextInputLayout til_lastname;
+    @BindView(R.id.text_input_layout_age) TextInputLayout til_age;
+
     @BindView(R.id.savebutton) Button savebutton;
     @BindView(R.id.takepicbutton) ImageButton takepicbutton;
     @BindView(R.id.eyeimage) ImageView eyeimageView;
@@ -46,23 +55,46 @@ public class FormActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.savebutton) void saveform() {
-        Log.e("TAG", "Save form");
-        Intent intent = new Intent(this, DetailActivity.class);
-        Bundle extras = new Bundle();
+        if (validateForm()) {
+            Log.e("TAG", "Save form");
+            Intent intent = new Intent(this, DetailActivity.class);
+            Bundle extras = new Bundle();
 
-        String firstname_str = firstname.getText().toString();
-        extras.putString(EXTRA_FIRSTNAME, firstname_str);
-        String lastname_str = lastname.getText().toString();
-        extras.putString(EXTRA_LASTNAME, lastname_str);
-        String age_str = age.getText().toString();
-        extras.putString(EXTRA_AGE, age_str);
-        final String sex_str = ((RadioButton)findViewById(radiogpsex.getCheckedRadioButtonId()))
-                        .getText().toString();
-        extras.putString(EXTRA_SEX, sex_str);
+            String firstname_str = firstname.getText().toString();
+            extras.putString(EXTRA_FIRSTNAME, firstname_str);
+            String lastname_str = lastname.getText().toString();
+            extras.putString(EXTRA_LASTNAME, lastname_str);
+            String age_str = age.getText().toString();
+            extras.putString(EXTRA_AGE, age_str);
+            final String sex_str = ((RadioButton) findViewById(radiogpsex.getCheckedRadioButtonId()))
+                    .getText().toString();
+            extras.putString(EXTRA_SEX, sex_str);
 
-        intent.putExtras(extras);
-        startActivity(intent);
-        finish();
+            intent.putExtras(extras);
+            startActivity(intent);
+            finish();
+        }
+    }
+
+    private Boolean validateForm() {
+        Boolean result = true;
+        if(firstname.getText().toString().trim().length() == 0) {
+            til_firstname.setError("กรุณาใส่ชื่อจริง");
+            result = false;
+        }
+        if(lastname.getText().toString().trim().length() == 0) {
+            til_lastname.setError("กรุณาใส่นามสกุล");
+            result = false;
+        }
+        if(age.getText().toString().trim().length() == 0) {
+            til_age.setError("กรุณาใส่อายุ");
+            result = false;
+        }
+        if (ResultHolder.getImage() == null) {
+            Toast.makeText(this, "กรุณาถ่ายรูปตา",
+                    Toast.LENGTH_LONG).show();
+        }
+        return result;
     }
 
     @OnClick(R.id.takepicbutton) void takepicture() {

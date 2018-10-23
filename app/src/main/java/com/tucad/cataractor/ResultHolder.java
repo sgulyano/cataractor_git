@@ -1,15 +1,12 @@
 package com.tucad.cataractor;
 
 import android.support.annotation.Nullable;
-
 import com.wonderkiln.camerakit.Size;
 
-import java.io.File;
 
 public class ResultHolder {
 
-    private static byte[] image;
-    private static File video;
+    private static byte[] image = null;
     private static Size nativeCaptureSize;
     private static long timeToCallback;
 
@@ -23,16 +20,7 @@ public class ResultHolder {
         return image;
     }
 
-    public static void setVideo(@Nullable File video) {
-        ResultHolder.video = video;
-    }
-
-    @Nullable
-    public static File getVideo() {
-        return video;
-    }
-
-    public static void setNativeCaptureSize(@Nullable Size nativeCaptureSize) {
+    static void setNativeCaptureSize(@Nullable Size nativeCaptureSize) {
         ResultHolder.nativeCaptureSize = nativeCaptureSize;
     }
 
@@ -41,15 +29,15 @@ public class ResultHolder {
         return nativeCaptureSize;
     }
 
-    public static void setTimeToCallback(long timeToCallback) {
+    static void setTimeToCallback(long timeToCallback) {
         ResultHolder.timeToCallback = timeToCallback;
     }
 
-    public static long getTimeToCallback() {
+    static long getTimeToCallback() {
         return timeToCallback;
     }
 
-    public static void dispose() {
+    static void dispose() {
         setImage(null);
         setNativeCaptureSize(null);
         setTimeToCallback(0);

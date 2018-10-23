@@ -1,20 +1,14 @@
 package com.tucad.cataractor;
 
-import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.arch.persistence.room.Room;
 import android.content.ContentResolver;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ExifInterface;
-import android.net.Uri;
+import android.media.ThumbnailUtils;
 import android.provider.MediaStore;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,13 +16,9 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RadioButton;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-
-import java.io.File;
-import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -40,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private static EyeRecordDatabase eyeRecordDatabase = null;
     private EyeRecord[] eyerecord_list = null;
 
-    @BindView(R.id.textView) TextView textView;
+    @BindView(R.id.list_num) TextView textView;
     @BindView(R.id.linearLayout) LinearLayout linearLayout;
     @BindView(R.id.tableLayout) TableLayout tableLayout;
 
@@ -51,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-//        getApplicationContext().deleteDatabase(DATABASE_NAME); //<<<< ADDED before building Database.
+        // getApplicationContext().deleteDatabase(DATABASE_NAME); //<<<< ADDED before building Database.
         eyeRecordDatabase = Room.databaseBuilder(getApplicationContext(),
                 EyeRecordDatabase.class, DATABASE_NAME)
                 .fallbackToDestructiveMigration()
@@ -59,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (eyerecord_list == null) {
             textView.setText("List not ready yet");
+            textView.setVisibility(View.VISIBLE);
         }
 
         ImageButton fab = findViewById(R.id.addfab);
@@ -95,9 +86,11 @@ public class MainActivity extends AppCompatActivity {
                 } else if (eyerecord_list.length <= 0) {
                     Log.e(TAG, "List is empty");
                     textView.setText("List is empty");
+                    textView.setVisibility(View.VISIBLE);
                 } else {
                     Log.e(TAG, "list is not empty");
                     textView.setText("List has items = " + eyerecord_list.length);
+                    textView.setVisibility(View.GONE);
 
                     runOnUiThread(new Runnable() {
                         @Override
@@ -119,23 +112,23 @@ public class MainActivity extends AppCompatActivity {
         //TODO: change layout of table row
         for (int i = 0; i < eyerecord_list.length; i++) {
             TableRow row= new TableRow(this);
-            row.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT));
+            row.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT));
+            row.setPadding(0,0,0,10);
 
             TextView firstname = new TextView(this);
+            firstname.setPadding(3,0,0,0);
             firstname.setText(eyerecord_list[i].getFirstname() + " ");
-            TextView lastname = new TextView(this);
-            lastname.setText(eyerecord_list[i].getLastname()+ " ");
-
             row.addView(firstname);
+
+            TextView lastname = new TextView(this);
+            lastname.setPadding(3,0,3,0);
+            lastname.setText(eyerecord_list[i].getLastname()+ " ");
             row.addView(lastname);
 
-//            TextView imagename = new TextView(this);
-//            imagename.setText(eyerecord_list[i].getImagepath());
             Log.e(TAG, eyerecord_list[i].getImagepath());
-
             try {
                 //TODO: show question mark when image not available
-                Bitmap thumb = getThumbnail(getContentResolver(), eyerecord_list[i].getImagepath());
+                Bitmap thumb = ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(eyerecord_list[i].getImagepath()), 192, 192);
                 ImageView thumbeye = new ImageView(this);
                 thumbeye.setImageBitmap(thumb);
                 row.addView(thumbeye);
@@ -143,35 +136,25 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e(TAG, "Fail load thumbnail");
+                ImageView unknown_img = new ImageView(this);
+                unknown_img.setImageResource(R.drawable.unknown_image);
+                unknown_img.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT));
+                row.addView(unknown_img);
             }
-//            if( cursor != null && cursor.getCount() > 0 ) {
-//                cursor.moveToFirst();//**EDIT**
-//                String uri = cursor.getString( cursor.getColumnIndex( MediaStore.Images.Thumbnails.DATA ) );
-//                Log.e(TAG, "URI" + uri);
-//            } else {
-//                Log.e(TAG, "cursor is null");
-//            }
 
-//            Log.e(TAG, eyerecord_list[i].getImagepath());
-//            ExifInterface exif = null;
-//            try {
-//                exif = new ExifInterface(eyerecord_list[i].getImagepath());
-//                byte[] imageData = exif.getThumbnail();
-//                Log.d(TAG, imageData.length + "");
-//                Bitmap thumbnail= BitmapFactory.decodeByteArray(imageData,0,imageData.length);
-//
-//                ImageView thumbeye = new ImageView(this);
-//                thumbeye.setImageBitmap(thumbnail);
-//                row.addView(thumbeye);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
+//            // Instantiate an ImageView and define its properties
+            ImageView seedetail = new ImageView(this);
+            seedetail.setImageResource(R.drawable.arrow_next);
+            seedetail.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT));
+            row.addView(seedetail);
+//            TextView seedetail = new TextView(this);
+//            seedetail.setText(">");
+//            row.addView(seedetail);
 
             final EyeRecord eyerec = eyerecord_list[i];
             row.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-//                    Log.e(TAG, getParent().toString());
                     Intent intent = new Intent(activity, DetailActivity.class);
                     Bundle extras = new Bundle();
                     extras.putString(FormActivity.EXTRA_FIRSTNAME, eyerec.getFirstname());
@@ -184,20 +167,23 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-
-            tableLayout.addView(row,i);
+            tableLayout.addView(row, i, new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,TableRow.LayoutParams.MATCH_PARENT));
         }
     }
 
-    public static Bitmap getThumbnail(ContentResolver cr, String path) throws Exception {
-
-        Cursor ca = cr.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new String[] { MediaStore.MediaColumns._ID }, MediaStore.MediaColumns.DATA + "=?", new String[] {path}, null);
-        if (ca != null && ca.moveToFirst()) {
-            int id = ca.getInt(ca.getColumnIndex(MediaStore.MediaColumns._ID));
+    public static Bitmap getThumbnail(ContentResolver cr, String path) {
+        Bitmap thumb = null;
+        Cursor ca = cr.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new String[] {
+                MediaStore.MediaColumns._ID }, MediaStore.MediaColumns.DATA + "=?",
+                new String[] {path}, null);
+        if (ca != null) {
+            if (ca.moveToFirst()) {
+                int id = ca.getInt(ca.getColumnIndex(MediaStore.MediaColumns._ID));
+                thumb = MediaStore.Images.Thumbnails.getThumbnail(
+                        cr, id, MediaStore.Images.Thumbnails.MICRO_KIND, null );
+            }
             ca.close();
-            return MediaStore.Images.Thumbnails.getThumbnail(cr, id, MediaStore.Images.Thumbnails.MICRO_KIND, null );
         }
-        ca.close();
-        return null;
+        return thumb;
     }
 }
