@@ -5,7 +5,9 @@ import android.util.Size;
 
 import com.camerakit.type.CameraSize;
 
-
+/**
+ * Temporally store image taken from Photo Activity
+ */
 public class ResultHolder {
 
     private static byte[] image = null;

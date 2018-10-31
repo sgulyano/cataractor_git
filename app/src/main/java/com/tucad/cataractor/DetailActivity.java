@@ -83,28 +83,28 @@ public class DetailActivity extends AppCompatActivity
         sex_str = extras.getString(FormActivity.EXTRA_SEX);
         image_path_str =  extras.getString(FormActivity.EXTRA_IMAGEPATH);
 
+        // show data
         fullname.setText(fromHtml("คุณ " + firstname_str + " " + lastname_str));
         agesex.setText(fromHtml("<string><font color=\"gray\">" + "อายุ " + age_str + " ปี, " +
                 "เพศ " + sex_str + "</font></string>"));
-
         diagnose.setText(fromHtml("ไม่ป่วยเป็นโรคต้อกระจก"));
         treatment.setText(fromHtml("ควรตรวจสุขภาพตาทุกๆ 12 เดือน"));
 
-
         if (image_path_str != null) {
-            // Info is already on record, show it
+            // image info is already on record, show it
             File imgfile = new File(image_path_str);
             if(imgfile.exists()) {
                 imageView.setImageURI(Uri.fromFile(imgfile));
                 imageView.setBackgroundResource(android.R.color.transparent);
             }
         } else {
-            // Load image
+            // load image
             byte[] jpeg = ResultHolder.getImage();
             if (jpeg != null) {
                 bitmap = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.length);
                 if (bitmap != null) {
                     imageView.setImageBitmap(bitmap);
+                    imageView.setBackgroundResource(android.R.color.transparent);
 
                     Resources res = getResources();
                     actualResolution.setText(String.format(
@@ -162,7 +162,11 @@ public class DetailActivity extends AppCompatActivity
         }
     }
 
-    @OnClick(R.id.takepicbutton) void takepicture() {
+    /**
+     * Return to main activity, update the screen if necessary
+     */
+    @OnClick(R.id.takepicbutton)
+    void takepicture() {
         Log.e(TAG, "finish");
         try {
             if (t != null) {
@@ -176,6 +180,9 @@ public class DetailActivity extends AppCompatActivity
     }
 
 
+    /**
+     * Do nothing when back button is pressed.
+     */
     @Override
     public void onBackPressed() {
         Log.e(TAG, "You shall not pass");
@@ -199,6 +206,10 @@ public class DetailActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Save eye record into the Room Database (SQLite on android) and
+     * save image into gallery (Cataractor folder)
+     */
     void saveEyeRecord() {
         // Create an image file name
         File myDir = new File(Environment.getExternalStoragePublicDirectory(

@@ -20,7 +20,6 @@ import butterknife.ButterKnife;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-
 public class FormActivity extends AppCompatActivity {
 
     public static final String TAG = "FormActivity";
@@ -51,6 +50,9 @@ public class FormActivity extends AppCompatActivity {
         ButterKnife.bind(this);
     }
 
+    /**
+     * Save form by passing eye record to Detail Activity
+     */
     @OnClick(R.id.savebutton) void saveform() {
         if (validateForm()) {
             Log.e("TAG", "Save form");
@@ -74,6 +76,9 @@ public class FormActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Check that all fields in the form are filled
+     */
     private Boolean validateForm() {
         Boolean result = true;
         if(firstname.getText().toString().trim().length() == 0) {
@@ -95,6 +100,9 @@ public class FormActivity extends AppCompatActivity {
         return result;
     }
 
+    /**
+     * Take eye picture
+     */
     @OnClick(R.id.takepicbutton) void takepicture() {
         Log.e("TAG", "Take picture begins");
         Intent intent = new Intent(this, PhotoActivity.class);
@@ -116,18 +124,12 @@ public class FormActivity extends AppCompatActivity {
 
                     if (bitmap != null) {
                         eyeimageView.setImageBitmap(bitmap);
-
-//                        actualResolution.setText(bitmap.getWidth() + " x " + bitmap.getHeight());
-//                        approxUncompressedSize.setText(getApproximateFileMegabytes(bitmap) + "MB");
-//                        captureLatency.setText(ResultHolder.getTimeToCallback() + " milliseconds");
                     }
                 }
-
             }
             if (resultCode == Activity.RESULT_CANCELED) {
-                //Write your code if there's no result
                 Log.e(TAG, "Result code canceled");
             }
         }
-    }//onActivityResult
+    }
 }
