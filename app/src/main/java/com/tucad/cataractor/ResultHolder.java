@@ -1,7 +1,9 @@
 package com.tucad.cataractor;
 
 import android.support.annotation.Nullable;
-import com.wonderkiln.camerakit.Size;
+import android.util.Size;
+
+import com.camerakit.type.CameraSize;
 
 
 public class ResultHolder {
@@ -20,8 +22,14 @@ public class ResultHolder {
         return image;
     }
 
-    static void setNativeCaptureSize(@Nullable Size nativeCaptureSize) {
-        ResultHolder.nativeCaptureSize = nativeCaptureSize;
+    static void setNativeCaptureSize(@Nullable CameraSize nativeCaptureSize) {
+        if (nativeCaptureSize != null) {
+            int height = nativeCaptureSize.getHeight();
+            int width = nativeCaptureSize.getWidth();
+            ResultHolder.nativeCaptureSize = new Size(width, height);
+        } else {
+            ResultHolder.nativeCaptureSize = null;
+        }
     }
 
     @Nullable

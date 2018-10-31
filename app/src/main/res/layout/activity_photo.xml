@@ -6,29 +6,26 @@
     android:layout_height="match_parent"
     tools:context=".PhotoActivity">
 
-    <com.wonderkiln.camerakit.CameraView
+
+    <com.camerakit.CameraKitView
         android:id="@+id/camera"
-        android:layout_width="342dp"
+        android:layout_width="match_parent"
         android:layout_height="409dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"
         android:adjustViewBounds="true"
         android:keepScreenOn="true"
-        android:visibility="visible"
-        app:ckPermissions="picture"
-        app:layout_constraintBottom_toTopOf="@+id/takepicbutton"
-        app:layout_constraintDimensionRatio="w,9:16"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:camera_facing="back"
+        app:camera_flash="off"
+        app:camera_focus="continuous"
+        app:camera_permissions="camera" />
 
-    <com.omega_r.libs.OmegaCenterIconButton
+    <Button
         android:id="@+id/takepicbutton"
-        android:layout_width="242dp"
-        android:layout_height="69dp"
-        android:layout_gravity="bottom"
-        android:layout_marginStart="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="64dp"
+        android:layout_marginBottom="16dp"
         android:backgroundTint="@color/colorAccent"
         android:drawableStart="@android:drawable/ic_menu_camera"
         android:text="@string/takephoto"
@@ -37,7 +34,7 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.47"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/camera" />
 
 </android.support.constraint.ConstraintLayout>

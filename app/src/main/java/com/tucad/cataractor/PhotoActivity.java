@@ -7,9 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 
-import com.wonderkiln.camerakit.CameraKitEventCallback;
-import com.wonderkiln.camerakit.CameraKitImage;
-import com.wonderkiln.camerakit.CameraView;
+import com.camerakit.CameraKitView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -20,7 +18,7 @@ public class PhotoActivity extends AppCompatActivity {
     private static final String TAG = "PhotoActivity";
     private long captureStartTime;
     @BindView(R.id.takepicbutton) Button takepicbutton;
-    @BindView(R.id.camera) CameraView cameraView;
+    @BindView(R.id.camera) CameraKitView cameraKitView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,42 +28,79 @@ public class PhotoActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        cameraKitView.onStart();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
-        cameraView.start();
+        cameraKitView.onResume();
     }
 
     @Override
     protected void onPause() {
-        cameraView.stop();
+        cameraKitView.onPause();
         super.onPause();
     }
-    
+
+    @Override
+    protected void onStop() {
+        cameraKitView.onStop();
+        super.onStop();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        cameraKitView.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
     @OnClick(R.id.takepicbutton) void takepicture() {
         Log.e("TAG", "Take picture");
         captureStartTime = System.currentTimeMillis();
-        cameraView.captureImage(new CameraKitEventCallback<CameraKitImage>() {
+//        cameraView.captureImage(new CameraKitEventCallback<CameraKitImage>() {
+//            @Override
+//            public void callback(CameraKitImage event) {
+//                imageCaptured(event);
+//            }
+//        });
+        cameraKitView.captureImage(new CameraKitView.ImageCallback() {
             @Override
-            public void callback(CameraKitImage event) {
-                imageCaptured(event);
+            public void onImage(CameraKitView cameraKitView, final byte[] photo) {
+                imageCaptured(cameraKitView, photo);
             }
         });
     }
 
-    //@OnCameraKitEvent(CameraKitImage.class)
-    public void imageCaptured(CameraKitImage image) {
-        byte[] jpeg = image.getJpeg();
 
+    public void imageCaptured(CameraKitView cameraKitview, byte[] jpeg) {
         long callbackTime = System.currentTimeMillis();
         ResultHolder.dispose();
         ResultHolder.setImage(jpeg);
-        ResultHolder.setNativeCaptureSize(cameraView.getCaptureSize());
+        ResultHolder.setNativeCaptureSize(cameraKitview.getPhotoResolution());
         ResultHolder.setTimeToCallback(callbackTime - captureStartTime);
 
         Intent intent = new Intent();
         setResult(Activity.RESULT_OK, intent);
         finish();
     }
+
+//    //@OnCameraKitEvent(CameraKitImage.class)
+//    public void imageCaptured(CameraKitImage image) {
+//        byte[] jpeg = image.getJpeg();
+//
+//        long callbackTime = System.currentTimeMillis();
+//        ResultHolder.dispose();
+//        ResultHolder.setImage(jpeg);
+//        ResultHolder.setNativeCaptureSize(cameraView.getCaptureSize());
+//        ResultHolder.setTimeToCallback(callbackTime - captureStartTime);
+//
+//        Intent intent = new Intent();
+//        setResult(Activity.RESULT_OK, intent);
+//        finish();
+//    }
 
     public void onBackPressed() {
         Log.e(TAG, "back canceled");

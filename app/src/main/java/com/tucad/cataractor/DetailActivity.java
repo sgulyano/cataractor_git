@@ -1,6 +1,7 @@
 package com.tucad.cataractor;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -96,7 +98,8 @@ public class DetailActivity extends AppCompatActivity
                 if (bitmap != null) {
                     imageView.setImageBitmap(bitmap);
 
-                    actualResolution.setText(bitmap.getWidth() + " x " + bitmap.getHeight());
+                    actualResolution.setText(bitmap.getWidth() + " x " + bitmap.getHeight() + ", ["
+                            + ResultHolder.getNativeCaptureSize() + "]");
                     approxUncompressedSize.setText(getApproximateFileMegabytes(bitmap) + "MB");
                     captureLatency.setText(ResultHolder.getTimeToCallback() + " milliseconds");
                 } else {
@@ -161,7 +164,7 @@ public class DetailActivity extends AppCompatActivity
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_WRITE_EXTERNAL_PERMISSION: {
                 // If request is cancelled, the result arrays are empty.
@@ -173,7 +176,6 @@ public class DetailActivity extends AppCompatActivity
                     // permission denied, boo!
                     Log.e(TAG, "Eye record is not saved");
                 }
-                return;
             }
         }
     }
@@ -182,6 +184,7 @@ public class DetailActivity extends AppCompatActivity
         // Create an image file name
         File myDir = new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), albumName);
+        @SuppressLint("SimpleDateFormat")
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String fname = "IMG_" + timeStamp + ".jpg";
 
