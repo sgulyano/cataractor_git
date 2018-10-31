@@ -3,16 +3,23 @@
     <string name="savebutton">บันทึก</string>
     <string name="hint_firstname">ชื่อจริง</string>
     <string name="hint_lastname">นามสกุล</string>
+    <string name="textname">ชื่อ</string>
     <string name="textsex">เพศ</string>
     <string name="radiobutM">ชาย</string>
     <string name="radiobutF">หญิง</string>
     <string name="textage">อายุ</string>
     <string name="textageunit">ปี</string>
     <string name="textphoto">รูปตา</string>
+    <string name="textphotodate">ถ่ายเมื่อ</string>
     <string name="takephoto">ถ่ายรูป</string>
     <string name="backhome">กลับหน้าหลัก</string>
     <string name="approx_uncompressed_size">APPROX. UNCOMPRESSED SIZE</string>
     <string name="resolution">RESOLUTION</string>
     <string name="capture_latency">CAPTURE LATENCY</string>
     <string name="request_permission">Ask write external storage permission</string>
+
+    <string name="show_actual_resolution">%1$dx%2$d [%3$s]</string>
+    <string name="show_approx_uncompressed_size">%1$.3f MB</string>
+    <string name="show_capture_latency">%1$d milliseconds</string>
+
 </resources>

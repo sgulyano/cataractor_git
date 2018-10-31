@@ -2,14 +2,17 @@ package com.tucad.cataractor;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -17,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -79,17 +83,21 @@ public class DetailActivity extends AppCompatActivity
         sex_str = extras.getString(FormActivity.EXTRA_SEX);
         image_path_str =  extras.getString(FormActivity.EXTRA_IMAGEPATH);
 
-        fullname.setText(Html.fromHtml("คุณ " + firstname_str + " " + lastname_str));
-        agesex.setText(Html.fromHtml("<string><font color=\"gray\">" + "อายุ " + age_str + " ปี, " +
+        fullname.setText(fromHtml("คุณ " + firstname_str + " " + lastname_str));
+        agesex.setText(fromHtml("<string><font color=\"gray\">" + "อายุ " + age_str + " ปี, " +
                 "เพศ " + sex_str + "</font></string>"));
 
-        diagnose.setText(Html.fromHtml("ไม่ป่วยเป็นโรคต้อกระจก"));
-        treatment.setText(Html.fromHtml("ควรตรวจสุขภาพตาทุกๆ 12 เดือน"));
+        diagnose.setText(fromHtml("ไม่ป่วยเป็นโรคต้อกระจก"));
+        treatment.setText(fromHtml("ควรตรวจสุขภาพตาทุกๆ 12 เดือน"));
 
 
         if (image_path_str != null) {
             // Info is already on record, show it
-            imageView.setImageURI(Uri.fromFile(new File(image_path_str)));
+            File imgfile = new File(image_path_str);
+            if(imgfile.exists()) {
+                imageView.setImageURI(Uri.fromFile(imgfile));
+                imageView.setBackgroundResource(android.R.color.transparent);
+            }
         } else {
             // Load image
             byte[] jpeg = ResultHolder.getImage();
@@ -98,16 +106,26 @@ public class DetailActivity extends AppCompatActivity
                 if (bitmap != null) {
                     imageView.setImageBitmap(bitmap);
 
-                    actualResolution.setText(bitmap.getWidth() + " x " + bitmap.getHeight() + ", ["
-                            + ResultHolder.getNativeCaptureSize() + "]");
-                    approxUncompressedSize.setText(getApproximateFileMegabytes(bitmap) + "MB");
-                    captureLatency.setText(ResultHolder.getTimeToCallback() + " milliseconds");
+                    Resources res = getResources();
+                    actualResolution.setText(String.format(
+                            res.getString(R.string.show_actual_resolution),
+                            bitmap.getWidth(),
+                            bitmap.getHeight(),
+                            ResultHolder.getNativeCaptureSize()));
+                    approxUncompressedSize.setText(String.format(
+                            res.getString(R.string.show_approx_uncompressed_size),
+                            getApproximateFileMegabytes(bitmap)));
+                    captureLatency.setText(String.format(
+                            res.getString(R.string.show_capture_latency),
+                            ResultHolder.getTimeToCallback()));
                 } else {
                     Log.e(TAG, "bitmap (onCreate) is null");
+                    setResult(Activity.RESULT_CANCELED, new Intent());
                     finish();
                 }
             } else {
                 Log.e(TAG, "jpeg is null");
+                setResult(Activity.RESULT_CANCELED, new Intent());
                 finish();
             }
 
@@ -153,6 +171,7 @@ public class DetailActivity extends AppCompatActivity
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        setResult(Activity.RESULT_OK, new Intent());
         finish();
     }
 
@@ -237,7 +256,7 @@ public class DetailActivity extends AppCompatActivity
         t = new Thread(new Runnable() {
             @Override
             public void run() {
-                MainActivity.addEyeRecord(eyerec);
+                EyeRecordDatabaseClient.addEyeRecord(eyerec);
                 Log.e(TAG, "save eye record successfully");
             }
         });
@@ -246,5 +265,14 @@ public class DetailActivity extends AppCompatActivity
 
     private static float getApproximateFileMegabytes(Bitmap bitmap) {
         return (bitmap.getRowBytes() * bitmap.getHeight()) / 1024 / 1024;
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Spanned fromHtml(String html){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            return Html.fromHtml(html);
+        }
     }
 }

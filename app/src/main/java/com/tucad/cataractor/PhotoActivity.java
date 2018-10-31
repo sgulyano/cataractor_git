@@ -2,6 +2,7 @@ package com.tucad.cataractor;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -52,7 +53,7 @@ public class PhotoActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         cameraKitView.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
@@ -60,12 +61,6 @@ public class PhotoActivity extends AppCompatActivity {
     @OnClick(R.id.takepicbutton) void takepicture() {
         Log.e("TAG", "Take picture");
         captureStartTime = System.currentTimeMillis();
-//        cameraView.captureImage(new CameraKitEventCallback<CameraKitImage>() {
-//            @Override
-//            public void callback(CameraKitImage event) {
-//                imageCaptured(event);
-//            }
-//        });
         cameraKitView.captureImage(new CameraKitView.ImageCallback() {
             @Override
             public void onImage(CameraKitView cameraKitView, final byte[] photo) {
@@ -86,21 +81,6 @@ public class PhotoActivity extends AppCompatActivity {
         setResult(Activity.RESULT_OK, intent);
         finish();
     }
-
-//    //@OnCameraKitEvent(CameraKitImage.class)
-//    public void imageCaptured(CameraKitImage image) {
-//        byte[] jpeg = image.getJpeg();
-//
-//        long callbackTime = System.currentTimeMillis();
-//        ResultHolder.dispose();
-//        ResultHolder.setImage(jpeg);
-//        ResultHolder.setNativeCaptureSize(cameraView.getCaptureSize());
-//        ResultHolder.setTimeToCallback(callbackTime - captureStartTime);
-//
-//        Intent intent = new Intent();
-//        setResult(Activity.RESULT_OK, intent);
-//        finish();
-//    }
 
     public void onBackPressed() {
         Log.e(TAG, "back canceled");

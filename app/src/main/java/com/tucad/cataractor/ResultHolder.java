@@ -33,7 +33,7 @@ public class ResultHolder {
     }
 
     @Nullable
-    public static Size getNativeCaptureSize() {
+    static Size getNativeCaptureSize() {
         return nativeCaptureSize;
     }
 

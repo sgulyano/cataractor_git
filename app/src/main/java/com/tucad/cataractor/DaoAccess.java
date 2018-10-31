@@ -18,7 +18,7 @@ public interface DaoAccess {
     @Query("SELECT * FROM EyeRecord WHERE recordId = :recordId")
     EyeRecord fetchOneEyeRecordbyRecordId(int recordId);
     @Query("SELECT * FROM EyeRecord ORDER BY recordId DESC;")
-    EyeRecord[] fetchAllEyeRecords();
+    List<EyeRecord> fetchAllEyeRecords();
     @Update
     void updateEyeRecord(EyeRecord eyeRecords);
     @Delete

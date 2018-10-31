@@ -1,8 +1,6 @@
 package com.tucad.cataractor;
 
 import android.app.Activity;
-import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,7 +8,6 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -58,6 +55,7 @@ public class FormActivity extends AppCompatActivity {
         if (validateForm()) {
             Log.e("TAG", "Save form");
             Intent intent = new Intent(this, DetailActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
             Bundle extras = new Bundle();
 
             String firstname_str = firstname.getText().toString();
