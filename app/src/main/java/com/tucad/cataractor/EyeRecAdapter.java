@@ -70,6 +70,13 @@ public class EyeRecAdapter extends RecyclerView.Adapter<EyeRecAdapter.EyeRecView
     }
 
     /**
+     * set a list of items to display on RecyclerView
+     */
+    public void setItems(List<EyeRecord> myDataset) {
+        this.mDataset = myDataset;
+    }
+
+    /**
      * Create new views for each item (invoked by the layout manager)
      */
     @NonNull

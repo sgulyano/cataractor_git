@@ -1,19 +1,30 @@
 package com.tucad.cataractor;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.ButterKnife;
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     @BindView(R.id.eyerecList) RecyclerView mRecyclerView;
+    private EyeRecAdapter mAdapter;
+    private ImageUploader imguploader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        // Follow this tutorial to start a localhost for testing upload feature
+        // https://stackoverflow.com/questions/43164971/how-can-i-upload-picture-from-android-app-to-server
 //        EyeRecordDatabaseClient.deleteDatabase(getApplicationContext());
         EyeRecordDatabaseClient.setupEyeRecordDatabaseClient(getApplicationContext());
 
@@ -38,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
         // use a linear layout manager
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        mAdapter = new EyeRecAdapter(getApplicationContext(), new ArrayList<EyeRecord>());
+        mRecyclerView.setAdapter(mAdapter);
 
         getEyeRecords();
     }
@@ -69,20 +87,81 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             protected List<EyeRecord> doInBackground(Void... voids) {
-                return EyeRecordDatabaseClient.getDatabase()
-                        .daoAccess()
-                        .fetchAllEyeRecords();
+                return EyeRecordDatabaseClient.fetchallredcords();
             }
 
             @Override
             protected void onPostExecute(List<EyeRecord> eyerecs) {
                 super.onPostExecute(eyerecs);
-                EyeRecAdapter mAdapter = new EyeRecAdapter(getApplicationContext(), eyerecs);
-                mRecyclerView.setAdapter(mAdapter);
+                mAdapter.setItems(eyerecs);
+                mAdapter.notifyDataSetChanged();
             }
         }
 
         GetTasks gt = new GetTasks();
         gt.execute();
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.sync_menu) {
+            Toast.makeText(MainActivity.this, "Action clicked", Toast.LENGTH_LONG).show();
+
+            // Internet is normal permission, no need to ask user, just check internet availability
+            // https://developer.android.com/guide/topics/permissions/overview#normal-dangerous
+            if (isInternetConnected())
+                syncEyeRecords();
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void syncEyeRecords() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                EyeRecord eyerec = EyeRecordDatabaseClient.getOneEyeRecord();
+                Log.e(TAG, eyerec.getImagepath());
+                File imgfile = new File(eyerec.getImagepath());
+                imguploader = new ImageUploader();
+                imguploader.uploadFile(imgfile);
+                Log.e(TAG, "sync eye records");
+            }
+        }).start();
+    }
+
+    private Boolean isInternetConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            Network network = cm.getActiveNetwork();
+            NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
+            return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+        } else {
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            boolean isConnected = activeNetwork != null &&
+                    activeNetwork.isConnectedOrConnecting();
+            Log.e(TAG, "Is connected = " + isConnected);
+            boolean isWiFi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+            Log.e(TAG, "Is WiFi = " + isWiFi);
+            return isConnected;
+        }
     }
 }

@@ -113,9 +113,7 @@ public class FormActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == TAKE_PHOTO_REQUEST) {
             if(resultCode == Activity.RESULT_OK){
-                //TODO: validate inputs
                 Log.e(TAG, "Result code OK");
-                //String result = data.getStringExtra("result");
 
                 byte[] jpeg = ResultHolder.getImage();
 

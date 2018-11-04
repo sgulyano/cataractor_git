@@ -10,7 +10,6 @@ import java.util.List;
 
 @Dao
 public interface DaoAccess {
-
     @Insert
     void insertOnlySingleEyeRecord(EyeRecord eyeRecord);
     @Insert
@@ -19,6 +18,8 @@ public interface DaoAccess {
     EyeRecord fetchOneEyeRecordbyRecordId(int recordId);
     @Query("SELECT * FROM EyeRecord ORDER BY recordId DESC;")
     List<EyeRecord> fetchAllEyeRecords();
+    @Query("SELECT * FROM EyeRecord ORDER BY recordId DESC LIMIT 1;")
+    EyeRecord fetchOneEyeRecord();
     @Update
     void updateEyeRecord(EyeRecord eyeRecords);
     @Delete

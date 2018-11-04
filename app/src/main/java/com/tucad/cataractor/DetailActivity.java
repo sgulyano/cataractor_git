@@ -236,7 +236,7 @@ public class DetailActivity extends AppCompatActivity
         // create directory
         if (!myDir.exists()) {
             Log.e(TAG, "Directory not exist " + myDir);
-            if (myDir.mkdirs()) {
+            if (!myDir.mkdirs()) {
                 Log.e(TAG, "Fail to create directory: " + myDir);
             }
         }
