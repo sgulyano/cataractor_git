@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.io.File;
@@ -32,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     @BindView(R.id.eyerecList) RecyclerView mRecyclerView;
+    @BindView(R.id.loadingPanel) RelativeLayout loadingPanel;
+
     private EyeRecAdapter mAdapter;
     private ImageUploader imguploader;
 
@@ -40,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        loadingPanel.setVisibility(View.GONE);
 
         // Follow this tutorial to start a localhost for testing upload feature
         // https://stackoverflow.com/questions/43164971/how-can-i-upload-picture-from-android-app-to-server
@@ -116,10 +120,12 @@ public class MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
+        loadingPanel.setVisibility(View.VISIBLE);
         //noinspection SimplifiableIfStatement
         if (id == R.id.sync_menu) {
             Toast.makeText(MainActivity.this, "Action clicked", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Visible");
+
 
             // Internet is normal permission, no need to ask user, just check internet availability
             // https://developer.android.com/guide/topics/permissions/overview#normal-dangerous
@@ -133,17 +139,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void syncEyeRecords() {
-        new Thread(new Runnable() {
+        class SyncData extends AsyncTask<Void, Void, Void> {
+
             @Override
-            public void run() {
+            protected void onPreExecute() {
+                loadingPanel.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 EyeRecord eyerec = EyeRecordDatabaseClient.getOneEyeRecord();
                 Log.e(TAG, eyerec.getImagepath());
                 File imgfile = new File(eyerec.getImagepath());
                 imguploader = new ImageUploader();
                 imguploader.uploadFile(imgfile);
                 Log.e(TAG, "sync eye records");
+                return null;
             }
-        }).start();
+
+            @Override
+            protected void onPostExecute(Void result) {
+                loadingPanel.setVisibility(View.GONE);
+            }
+        }
+
+        SyncData gt = new SyncData();
+        gt.execute();
+    }
+
+    public void setLoadPanelGone() {
+        loadingPanel.setVisibility(View.GONE);
     }
 
     private Boolean isInternetConnected() {

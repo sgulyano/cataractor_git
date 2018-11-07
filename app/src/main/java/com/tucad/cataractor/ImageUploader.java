@@ -31,7 +31,7 @@ class ImageUploader {
         // (i.e., 127.0.0.1 on your development machine)
         // https://developer.android.com/studio/run/emulator-networking
         service = new Retrofit.Builder()
-                .baseUrl("http://10.0.2.2:3000")
+                .baseUrl("http://10.0.2.2:49160")
                 .client(client)
                 .build()
                 .create(ImageService.class);

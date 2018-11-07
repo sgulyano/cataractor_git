@@ -16,16 +16,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <RelativeLayout
+        android:id="@+id/loadingPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="70dp"
+            android:indeterminate="true" />
+
+    </RelativeLayout>
+
     <android.support.v7.widget.AppCompatImageButton
         android:id="@+id/addfab"
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="50dp"
+        android:backgroundTint="@color/colorAccent"
         android:clickable="true"
+        android:focusable="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@android:drawable/ic_input_add"
-        android:focusable="true" />
+        app:srcCompat="@drawable/ic_add" />
 
 </android.support.constraint.ConstraintLayout>
