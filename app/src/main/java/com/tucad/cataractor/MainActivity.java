@@ -43,7 +43,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        loadingPanel.setVisibility(View.GONE);
 
         // Follow this tutorial to start a localhost for testing upload feature
         // https://stackoverflow.com/questions/43164971/how-can-i-upload-picture-from-android-app-to-server
@@ -170,10 +169,6 @@ public class MainActivity extends AppCompatActivity {
 
         SyncData gt = new SyncData();
         gt.execute();
-    }
-
-    public void setLoadPanelGone() {
-        loadingPanel.setVisibility(View.GONE);
     }
 
     private Boolean isInternetConnected() {
